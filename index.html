@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Robotic Arm Kinematics Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>Robotic Arm Kinematics Simulator</h1>
+    </header>
+
+    <main class="container">
+      <section class="controls" aria-label="Angle Controls">
+        <div class="control-row">
+          <label for="theta1">θ1</label>
+          <input id="theta1" type="range" min="0" max="180" value="30" step="1">
+          <output id="theta1Value" for="theta1">30°</output>
+        </div>
+        <div class="control-row">
+          <label for="theta2">θ2</label>
+          <input id="theta2" type="range" min="0" max="180" value="45" step="1">
+          <output id="theta2Value" for="theta2">45°</output>
+        </div>
+        <div class="control-row">
+          <label for="theta3">θ3</label>
+          <input id="theta3" type="range" min="0" max="180" value="60" step="1">
+          <output id="theta3Value" for="theta3">60°</output>
+        </div>
+      </section>
+
+      <section class="canvas-wrap" aria-label="Canvas Area">
+        <canvas id="armCanvas" width="700" height="420"></canvas>
+        <div id="coords" class="coords" aria-live="polite">End Effector: (x: 0.0, y: 0.0)</div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+  </html>
+
+
