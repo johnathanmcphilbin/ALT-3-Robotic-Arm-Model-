@@ -10,27 +10,28 @@ LINK_LENGTHS = (1.2, 1.0, 0.8)
 
 
 def forward_kinematics_3d(theta1_deg: float, theta2_deg: float, theta3_deg: float):
-  """Compute end-effector position (x, y, z) for a planar 3-link arm in 3D (z=0).
+  """Compute end-effector (x, y, z) for a 3-link arm with:
+  θ1: base yaw about Z
+  θ2: shoulder pitch about X
+  θ3: elbow pitch about X
 
-  All rotations are about the Z axis, cumulative from the base.
+  Links are aligned along +Y in their local frames. Pitching about +X moves links in Y-Z plane.
   """
   t1 = radians(theta1_deg)
   t2 = radians(theta2_deg)
   t3 = radians(theta3_deg)
   L1, L2, L3 = LINK_LENGTHS
 
-  x1 = L1 * cos(t1)
-  y1 = L1 * sin(t1)
+  # Effective Y and Z components before yaw, given local +Y alignment and X-axis pitch.
+  sumY = (L1 * cos(t2)) + (L2 * cos(t2 + t3)) + (L3 * cos(t2 + t3))
+  sumZ = (L1 * sin(t2)) + (L2 * sin(t2 + t3)) + (L3 * sin(t2 + t3))
 
-  t12 = t1 + t2
-  x2 = x1 + L2 * cos(t12)
-  y2 = y1 + L2 * sin(t12)
+  # Apply yaw about Z to rotate Y component into X/Y plane.
+  x = -sin(t1) * sumY
+  y =  cos(t1) * sumY
+  z =  sumZ
 
-  t123 = t12 + t3
-  x3 = x2 + L3 * cos(t123)
-  y3 = y2 + L3 * sin(t123)
-
-  return x3, y3, 0.0
+  return x, y, z
 
 
 @app.route('/')

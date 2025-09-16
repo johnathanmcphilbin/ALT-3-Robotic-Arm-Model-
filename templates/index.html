@@ -91,6 +91,7 @@
 
       const link1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, L1, 24), linkMat);
       link1.geometry.translate(0, L1/2, 0);
+      // group1 rotates around Z (yaw)
       const group1 = new THREE.Group();
       group1.add(link1);
       base.add(group1);
@@ -101,6 +102,7 @@
 
       const link2 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, L2, 24), linkMat);
       link2.geometry.translate(0, L2/2, 0);
+      // group2 rotates around X (shoulder pitch)
       const group2 = new THREE.Group();
       group2.add(link2);
       group2.position.y = L1;
@@ -112,6 +114,7 @@
 
       const link3 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, L3, 24), linkMat);
       link3.geometry.translate(0, L3/2, 0);
+      // group3 rotates around X (elbow pitch)
       const group3 = new THREE.Group();
       group3.add(link3);
       group3.position.y = L2;
@@ -141,11 +144,11 @@
         t3Out.textContent = `${theta3El.value}°`;
       }
 
-      // Apply angles to groups (Z-axis rotations for planar arm)
+      // Apply angles: Z yaw at base, X pitch for shoulder and elbow
       function applyAngles(t1, t2, t3) {
         group1.rotation.z = degToRad(t1);
-        group2.rotation.z = degToRad(t2);
-        group3.rotation.z = degToRad(t3);
+        group2.rotation.x = degToRad(t2);
+        group3.rotation.x = degToRad(t3);
       }
 
       async function fetchKinematics(t1, t2, t3) {

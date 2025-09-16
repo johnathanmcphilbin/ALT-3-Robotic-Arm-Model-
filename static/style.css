@@ -78,6 +78,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .canvas-wrap { display: grid; gap: 12px; }
+#scene { width: 100%; }
 #scene canvas { display: block; width: 100%; height: auto; border-radius: 10px; }
 .coords { color: #93c5fd; font-variant-numeric: tabular-nums; }
 
