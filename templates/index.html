@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>3D Robotic Arm Kinematics Simulator</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>3D Robotic Arm Kinematics Simulator</h1>
+    </header>
+
+    <main class="container">
+      <section class="panel controls" aria-label="Angle Controls">
+        <div class="control-row">
+          <label for="theta1">θ1</label>
+          <input id="theta1" type="range" min="0" max="180" value="30" step="1">
+          <output id="theta1Value" for="theta1">30°</output>
+        </div>
+        <div class="control-row">
+          <label for="theta2">θ2</label>
+          <input id="theta2" type="range" min="0" max="180" value="45" step="1">
+          <output id="theta2Value" for="theta2">45°</output>
+        </div>
+        <div class="control-row">
+          <label for="theta3">θ3</label>
+          <input id="theta3" type="range" min="0" max="180" value="60" step="1">
+          <output id="theta3Value" for="theta3">60°</output>
+        </div>
+      </section>
+
+      <section class="panel canvas-wrap" aria-label="3D Scene">
+        <div id="scene"></div>
+        <div id="coords" class="coords" aria-live="polite">End Effector: (x: 0.0, y: 0.0, z: 0.0)</div>
+      </section>
+    </main>
+
+    <script type="module">
+      import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+      import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+      const sceneEl = document.getElementById('scene');
+      const coordsEl = document.getElementById('coords');
+      const theta1El = document.getElementById('theta1');
+      const theta2El = document.getElementById('theta2');
+      const theta3El = document.getElementById('theta3');
+      const t1Out = document.getElementById('theta1Value');
+      const t2Out = document.getElementById('theta2Value');
+      const t3Out = document.getElementById('theta3Value');
+
+      // Scene
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0b0f1a);
+
+      const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+      camera.position.set(3.5, 2.5, 4.5);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      sceneEl.appendChild(renderer.domElement);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.target.set(0, 0.8, 0);
+
+      // Lights
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+      dir.position.set(3, 5, 2);
+      scene.add(dir);
+
+      // Ground grid
+      const grid = new THREE.GridHelper(20, 20, 0x334155, 0x1f2937);
+      grid.position.y = 0;
+      scene.add(grid);
+
+      // Arm materials
+      const linkMat = new THREE.MeshStandardMaterial({ color: 0x60a5fa, metalness: 0.2, roughness: 0.4 });
+      const jointMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, metalness: 0.2, roughness: 0.5 });
+
+      // Link lengths (match backend units)
+      const L1 = 1.2, L2 = 1.0, L3 = 0.8;
+
+      // Build arm: 3 joints (spheres) and 3 links (cylinders)
+      const base = new THREE.Group();
+      scene.add(base);
+
+      const joint0 = new THREE.Mesh(new THREE.SphereGeometry(0.07, 32, 16), jointMat);
+      base.add(joint0);
+
+      const link1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, L1, 24), linkMat);
+      link1.geometry.translate(0, L1/2, 0);
+      const group1 = new THREE.Group();
+      group1.add(link1);
+      base.add(group1);
+
+      const joint1 = new THREE.Mesh(new THREE.SphereGeometry(0.065, 32, 16), jointMat);
+      joint1.position.y = L1;
+      group1.add(joint1);
+
+      const link2 = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, L2, 24), linkMat);
+      link2.geometry.translate(0, L2/2, 0);
+      const group2 = new THREE.Group();
+      group2.add(link2);
+      group2.position.y = L1;
+      group1.add(group2);
+
+      const joint2 = new THREE.Mesh(new THREE.SphereGeometry(0.06, 32, 16), jointMat);
+      joint2.position.y = L2;
+      group2.add(joint2);
+
+      const link3 = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, L3, 24), linkMat);
+      link3.geometry.translate(0, L3/2, 0);
+      const group3 = new THREE.Group();
+      group3.add(link3);
+      group3.position.y = L2;
+      group2.add(group3);
+
+      const endEff = new THREE.Mesh(new THREE.SphereGeometry(0.055, 32, 16), new THREE.MeshStandardMaterial({ color: 0x22d3ee }));
+      endEff.position.y = L3;
+      group3.add(endEff);
+
+      // Resize handling
+      function resize() {
+        const rect = sceneEl.getBoundingClientRect();
+        const w = rect.width;
+        const h = Math.max(320, rect.width * 0.6);
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      // Helpers
+      const degToRad = (d) => d * Math.PI / 180;
+      function updateOutputs() {
+        t1Out.textContent = `${theta1El.value}°`;
+        t2Out.textContent = `${theta2El.value}°`;
+        t3Out.textContent = `${theta3El.value}°`;
+      }
+
+      // Apply angles to groups (Z-axis rotations for planar arm)
+      function applyAngles(t1, t2, t3) {
+        group1.rotation.z = degToRad(t1);
+        group2.rotation.z = degToRad(t2);
+        group3.rotation.z = degToRad(t3);
+      }
+
+      async function fetchKinematics(t1, t2, t3) {
+        try {
+          const res = await fetch('/calculate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theta1: t1, theta2: t2, theta3: t3 })
+          });
+          if (!res.ok) throw new Error('Request failed');
+          const data = await res.json();
+          coordsEl.textContent = `End Effector: (x: ${data.x.toFixed(3)}, y: ${data.y.toFixed(3)}, z: ${data.z.toFixed(3)})`;
+        } catch (e) {
+          coordsEl.textContent = 'End Effector: connection error';
+        }
+      }
+
+      function onInput() {
+        updateOutputs();
+        const t1 = Number(theta1El.value);
+        const t2 = Number(theta2El.value);
+        const t3 = Number(theta3El.value);
+        applyAngles(t1, t2, t3);
+        fetchKinematics(t1, t2, t3);
+      }
+
+      ['input', 'change'].forEach(evt => {
+        theta1El.addEventListener(evt, onInput);
+        theta2El.addEventListener(evt, onInput);
+        theta3El.addEventListener(evt, onInput);
+      });
+
+      // Animate
+      function animate() {
+        controls.update();
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      animate();
+
+      // Initial
+      onInput();
+    </script>
+  </body>
+  </html>
+
+
