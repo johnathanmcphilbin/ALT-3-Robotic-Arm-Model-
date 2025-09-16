@@ -36,9 +36,9 @@
       </section>
     </main>
 
-    <script type="module">
-      import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-      import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
 
       const sceneEl = document.getElementById('scene');
       const coordsEl = document.getElementById('coords');
@@ -60,7 +60,7 @@
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       sceneEl.appendChild(renderer.domElement);
 
-      const controls = new OrbitControls(camera, renderer.domElement);
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.target.set(0, 0.8, 0);
 
