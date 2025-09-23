@@ -13,30 +13,90 @@
     <header class="site-header">
       <h1>Robotic Arm Kinematics Simulator</h1>
       <div id="modeIndicator" aria-live="polite">Mode: Sliders (press Tab to toggle Mouse Follow)</div>
+      <div id="hud" aria-live="polite">Score: <span id="score">0</span> · Misses: <span id="misses">0</span></div>
     </header>
 
     <main class="container">
       <section class="controls" aria-label="Angle Controls">
         <div class="control-row">
           <label for="theta1">θ1</label>
-          <input id="theta1" type="range" min="0" max="180" value="30" step="1">
+          <input id="theta1" type="range" min="0" max="360" value="30" step="1">
           <output id="theta1Value" for="theta1">30°</output>
         </div>
         <div class="control-row">
           <label for="theta2">θ2</label>
-          <input id="theta2" type="range" min="0" max="180" value="45" step="1">
+          <input id="theta2" type="range" min="0" max="360" value="45" step="1">
           <output id="theta2Value" for="theta2">45°</output>
         </div>
         <div class="control-row">
           <label for="theta3">θ3</label>
-          <input id="theta3" type="range" min="0" max="180" value="60" step="1">
+          <input id="theta3" type="range" min="0" max="360" value="60" step="1">
           <output id="theta3Value" for="theta3">60°</output>
+        </div>
+        <div class="control-row">
+          <label for="difficulty">Lvl</label>
+          <input id="difficulty" type="range" min="0" max="10" value="2" step="1">
+          <output id="difficultyValue" for="difficulty">2 balls/sec</output>
+        </div>
+        <div class="control-row">
+          <label for="gameMode">Mode</label>
+          <select id="gameMode">
+            <option value="bucket" selected>Bucket (catch)</option>
+            <option value="basketball">Basketball (throw)</option>
+          </select>
+          <output for="gameMode">Choose a mini-game</output>
         </div>
       </section>
 
       <section class="canvas-wrap" aria-label="Canvas Area">
         <canvas id="armCanvas" width="700" height="420"></canvas>
         <div id="coords" class="coords" aria-live="polite">End Effector: (x: 0.0, y: 0.0)</div>
+        <div id="gameHint" class="coords" aria-live="polite">Bucket: catch falling balls. Basketball: hold Space to hold ball; release to throw.</div>
+      </section>
+
+      <section class="controls" aria-label="Project Documentation">
+        <div>
+          <h2 style="margin: 0 0 8px 0; font-size: 18px;">Project Documentation</h2>
+          <p style="margin: 0 0 8px 0; color: var(--muted);">Brief: Model anything — build a computer model of a system.</p>
+
+          <h3 style="margin: 12px 0 6px; font-size: 16px;">1) Meeting the Brief</h3>
+          <p style="margin: 0 0 8px 0;">This web app models a 3‑link robotic arm. You can control the arm with sliders or by moving the mouse (Tab to toggle). The app simulates how the arm moves and lets you play small games (catching balls in a bucket or throwing into a hoop).</p>
+
+          <h3 style="margin: 12px 0 6px; font-size: 16px;">2) Investigation (Research)</h3>
+          <p style="margin: 0 0 8px 0;">I looked at how robot arms are usually controlled in 2D. I used a common method called CCD (Cyclic Coordinate Descent) to point the hand at a target. I also checked simple physics ideas for gravity and contacts, and looked at arm games for inspiration (e.g., physics sandboxes, grappling/arm puzzles, claw machines, and basketball arc simulators).</p>
+
+          <h3 style="margin: 12px 0 6px; font-size: 16px;">3) Plan and Design</h3>
+          <p style="margin: 0 0 8px 0;">I planned a simple browser app: HTML/CSS for layout, a canvas for drawing, and plain JavaScript for the math, physics, and input. The design keeps controls on the left and the play area on the right.</p>
+          <p style="margin: 0 0 8px 0;">Flow:</p>
+          <ul style="margin: 0 0 8px 16px; padding: 0 0 0 16px;">
+            <li>User input → set arm target/base</li>
+            <li>IK solver (CCD) → update the angles</li>
+            <li>Physics step → balls fall, collide, score</li>
+            <li>Draw canvas → arm, balls, goals</li>
+            <li>Update score/misses</li>
+          </ul>
+
+          <h3 style="margin: 12px 0 6px; font-size: 16px;">4) Create (Build Log)</h3>
+          <ul style="margin: 0 0 8px 16px; padding: 0 0 0 16px;">
+            <li>Arm drawing and sliders (2D)</li>
+            <li>Mouse‑follow mode with IK</li>
+            <li>Gravity and simple collisions</li>
+            <li>Bucket game (catch and stack)</li>
+            <li>Basketball game (aim and shoot)</li>
+            <li>Difficulty slider (balls per second)</li>
+          </ul>
+
+          <h3 style="margin: 12px 0 6px; font-size: 16px;">Problems and Iteration</h3>
+          <ul style="margin: 0 0 8px 16px; padding: 0 0 0 16px;">
+            <li>Early on I tried to add a full 3D view. It was heavy and didn’t render reliably on some browsers, so I removed it and kept the app fast and simple in 2D.</li>
+            <li>Mouse control felt odd at first. I added 360° angles and clamped the target so the hand stays reachable, which made it feel natural.</li>
+            <li>Stacks of balls overlapped. I added a light separation step so balls don’t sink into each other.</li>
+          </ul>
+
+          <h3 style="margin: 12px 0 6px; font-size: 16px;">5) Evaluation and Simple Maths</h3>
+          <p style="margin: 0 0 8px 0;">The arm uses basic trigonometry. Each link adds <code>length × cos/sin</code> of the angle to get the next joint. The IK adjusts angles one by one to point the hand toward the target. Gravity is a constant downward acceleration, and collisions push objects apart along the line between them.</p>
+          <p style="margin: 0;">Tests: extreme angles, high/low difficulty, catching vs. missing, and shooting into the hoop from different distances.</p>
+        </div>
       </section>
     </main>
 
